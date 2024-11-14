@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "target": "ES2020",
+      "module": "CommonJS",
+      "moduleResolution": "node",
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "outDir": "./dist/workflow",
+      "rootDir": "./src",
+      "baseUrl": "./src",
+      "paths": {
+        "@/*": ["*"]
+      },
+      "resolveJsonModule": true,
+      "allowJs": true,
+      "declaration": false,
+      "sourceMap": true
+    },
+    "include": [
+      "src/workflow/**/*",
+      "src/providers/**/*",
+      "src/types/**/*",
+      "src/utils/**/*"
+    ],
+    "exclude": [
+      "node_modules",
+      "**/*.test.ts"
+    ]
+  }

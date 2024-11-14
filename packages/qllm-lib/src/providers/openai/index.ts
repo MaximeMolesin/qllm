@@ -24,6 +24,7 @@ import {
   ChatCompletionCreateParamsNonStreaming as ChatCompletionCreateParamsNonStreamingOpenAI,
 } from 'openai/resources/chat/completions';
 import { createBase64Url, imageToBase64 } from '../../utils/images/image-to-base64';
+import { ChatCompletionTool, FunctionDefinition, OpenAITool } from '../../types/openai-types';
 
 const DEFAULT_MAX_TOKENS = 1024 * 8;
 const DEFAULT_MODEL = 'gpt-4o-mini';
@@ -257,7 +258,12 @@ export class OpenAIProvider implements LLMProvider, EmbeddingProvider {
   private formatTools(tools?: Tool[]): ChatCompletionToolOpenAI[] | undefined {
     if (!tools) return undefined;
     return tools.map((tool) => ({
-      ...tool,
+      function: {
+        name: tool.function.name,
+        description: tool.function.description,
+        parameters: tool.function.parameters || {}
+      },
+      type: "function"
     }));
   }
 
@@ -275,5 +281,16 @@ export class OpenAIProvider implements LLMProvider, EmbeddingProvider {
     } else {
       throw new InvalidRequestError(`Unknown error occurred: ${error}`, 'OpenAI');
     }
+  }
+
+  private prepareOpenAITools(tools: any[] = []): ChatCompletionTool[] {
+    return tools.map((tool) => ({
+      function: {
+        name: tool.function?.name || "",
+        description: tool.function?.description || "",
+        parameters: tool.function?.parameters || {}
+      } as FunctionDefinition,
+      type: "function"
+    }));
   }
 }

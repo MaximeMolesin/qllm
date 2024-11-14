@@ -20,6 +20,16 @@ const DEFAULT_MAX_TOKENS = 1024 * 4;
 const DEFAULT_MODEL = 'mistral-small-latest';
 const DEFAULT_EMBEDDING_MODEL = 'mistral-embed';
 
+interface MistralTool {
+  function: {
+    name: string;
+    description: string;
+    parameters?: Record<string, any>;
+  };
+  type: "function";
+  strict?: boolean;
+}
+
 /**
  * MistralProvider class implements the LLMProvider interface for Mistral AI's language models.
  * It provides methods for generating messages, streaming messages, and generating embeddings.
@@ -95,25 +105,16 @@ export class MistralProvider implements LLMProvider, EmbeddingProvider {
     }
   }
 
-  private prepareMistraTools(
-    tools:
-      | {
-          function: { name: string; description: string; parameters?: any };
-          type: 'function';
-          strict?: boolean | undefined;
-        }[]
-      | undefined,
-  ) {
-    return (
-      tools?.map((tool) => ({
-        type: tool.type,
-        function: {
-          name: tool.function.name,
-          description: tool.function.description,
-          arguments: tool.function.parameters as string,
-        },
-      })) || undefined
-    );
+  private prepareMistraTools(tools: any[] = []): MistralTool[] {
+    return tools.map((tool) => ({
+      function: {
+        name: tool.function?.name || "",
+        description: tool.function?.description || "",
+        parameters: tool.function?.parameters || {}
+      },
+      type: "function",
+      strict: tool.strict
+    }));
   }
 
   private extractToolCallsResult(toolCalls: any): ToolCall[] {

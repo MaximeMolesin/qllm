@@ -3,76 +3,47 @@
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 class Logger {
-  private logLevel: LogLevel;
+  private level: LogLevel = 'info';
 
-  constructor(logLevel: LogLevel = 'info') {
-    this.logLevel = logLevel;
+  setLevel(level: LogLevel) {
+    this.level = level;
   }
 
-  private getTimestamp(): string {
-    return new Date().toISOString();
+  private isNode(): boolean {
+    return typeof process !== 'undefined' && 
+           process.versions != null && 
+           process.versions.node != null;
   }
 
-  private log(level: LogLevel, message: string, ...args: any[]): void {
-    const levels: Record<LogLevel, number> = {
-      debug: 0,
-      info: 1,
-      warn: 2,
-      error: 3,
-    };
-
-    if (levels[level] >= levels[this.logLevel]) {
-      const timestamp = this.getTimestamp();
-      const formattedMessage = `[${timestamp}] [${level.toUpperCase()}] ${message}`;
-
-      if (typeof window !== 'undefined') {
-        // Browser environment
-        switch (level) {
-          case 'debug':
-            console.debug(formattedMessage, ...args);
-            break;
-          case 'info':
-            console.info(formattedMessage, ...args);
-            break;
-          case 'warn':
-            console.warn(formattedMessage, ...args);
-            break;
-          case 'error':
-            console.error(formattedMessage, ...args);
-            break;
-        }
-      } else {
-        // Node.js environment
-        const colors: Record<LogLevel, string> = {
-          debug: '\x1b[36m', // Cyan
-          info: '\x1b[32m', // Green
-          warn: '\x1b[33m', // Yellow
-          error: '\x1b[31m', // Red
-        };
-        const resetColor = '\x1b[0m';
-        console.log(`${colors[level]}${formattedMessage}${resetColor}`, ...args);
-      }
+  private log(level: LogLevel, message: string, ...args: any[]) {
+    if (this.isNode()) {
+      console[level](message, ...args);
+    } else {
+      // Fallback pour les environnements non-Node
+      console.log(`[${level.toUpperCase()}] ${message}`, ...args);
     }
   }
 
-  debug(message: string, ...args: any[]): void {
-    this.log('debug', message, ...args);
+  debug(message: string, ...args: any[]) {
+    if (this.level === 'debug') {
+      this.log('debug', message, ...args);
+    }
   }
 
-  info(message: string, ...args: any[]): void {
-    this.log('info', message, ...args);
+  info(message: string, ...args: any[]) {
+    if (['debug', 'info'].includes(this.level)) {
+      this.log('info', message, ...args);
+    }
   }
 
-  warn(message: string, ...args: any[]): void {
-    this.log('warn', message, ...args);
+  warn(message: string, ...args: any[]) {
+    if (['debug', 'info', 'warn'].includes(this.level)) {
+      this.log('warn', message, ...args);
+    }
   }
 
-  error(message: string, ...args: any[]): void {
+  error(message: string, ...args: any[]) {
     this.log('error', message, ...args);
-  }
-
-  setLogLevel(level: LogLevel): void {
-    this.logLevel = level;
   }
 }
 

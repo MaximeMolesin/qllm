@@ -1,13 +1,16 @@
-import { createLLMProvider, WorkflowManager } from "qllm-lib";
+import { WorkflowManager } from "./workflow-manager";
+import { getLLMProvider } from "../providers";
+import { WorkflowStep, WorkflowExecutionResult } from "../types/workflow-types";
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Charger les variables d'environnement
+dotenv.config();
 
 async function main(): Promise<void> {
   // Créer les providers
   const providers = {
-    openai: createLLMProvider({
-      name: "openai",
-      apiKey: process.env.OPENAI_API_KEY
-    })
+    openai: await getLLMProvider("openai")
   };
 
   // Initialiser le workflow manager
@@ -33,14 +36,14 @@ async function main(): Promise<void> {
       "ai_research_workflow",
       workflowInput,
       {
-        onStepStart: (step, index) => {
+        onStepStart: (step: WorkflowStep, index: number) => {
           console.log(`\n🔍 Démarrage de l'étape ${index + 1}: ${step.template.name}`);
         },
-        onStepComplete: (step, index, result) => {
+        onStepComplete: (step: WorkflowStep, index: number, result: WorkflowExecutionResult) => {
           console.log(`\n✅ Étape ${index + 1} terminée: ${step.template.name}`);
           console.log(`Résultat de l'étape ${index + 1}:`, result);
         },
-        onStreamChunk: (chunk) => {
+        onStreamChunk: (chunk: string) => {
           process.stdout.write(chunk);
         }
       }
@@ -55,13 +58,10 @@ async function main(): Promise<void> {
   }
 }
 
-// Gestion des erreurs
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('🚨 Rejet non géré:', reason);
-});
-
 // Exécuter la fonction principale
-main().catch((error) => {
-  console.error("\n💥 Erreur fatale:", error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("\n💥 Erreur fatale:", error);
+    process.exit(1);
+  });
+}
