@@ -1,0 +1,105 @@
+name: ai_research_workflow
+description: Analyze AI articles and generate debate analysis
+defaultProvider: openai
+
+templates:
+  - name: 🌐 Universal Language Translator
+    version: 1.0.0
+    description: 🔄 Translate text between multiple languages with context awareness
+    author: 🤖 TranslatorAI
+    content: |
+      ## Translate the following text:
+
+      <source_text>
+      {{text_to_translate}}
+      </source_text>
+
+      Source Language: {{source_language}}
+      Target Language: {{target_language}}
+
+      Requirements:
+      - Maintain the original meaning and context
+      - Preserve formatting and special characters
+      - Consider cultural nuances and idioms
+      - Provide alternative translations for ambiguous terms
+      - Keep the style consistent with the source text
+      
+      ## Always include the Output in Format:
+
+      <translation>
+      The translated text
+      </translation>
+
+      END.
+    inputVariables:
+      - name: text_to_translate
+        type: string
+        description: 📝 The text that needs to be translated
+      - name: source_language
+        type: string
+        description: 🔤 The language of the source text
+      - name: target_language
+        type: string
+        description: 🎯 The desired language for translation
+    outputVariables:
+      - name: translation
+        type: string
+        description: 🔄 The translated text
+    model: gpt-4
+    parameters:
+      max_tokens: 1000
+      temperature: 0.3
+      top_p: 0.95
+      presence_penalty: 0.1
+      frequency_penalty: 0.1
+
+  - name: 📚 Impatient Learner's Guide Generator
+    version: 1.0.0
+    description: 🚀 Generate engaging learning article for quick mastery
+    author: 🤖 LearningAI
+    content: |
+      [Contenu du template learning article]
+    inputVariables:
+      - name: subject
+        type: string
+        description: 📚 The subject to be taught
+      - name: number_words
+        type: string
+        description: 📏 Target word count for the article
+      - name: additional_requirements
+        type: string
+        description: ➕ Any additional specific requirements
+    outputVariables:
+      - name: article
+        type: string
+        description: 📖 Generated article content
+      - name: next_steps
+        type: string
+        description: ⏭️ Continuation instructions
+    model: gpt-4
+    parameters:
+      max_tokens: 2000
+      temperature: 0.2
+      top_p: 0.95
+      presence_penalty: 0.2
+      frequency_penalty: 0.3
+
+steps:
+  - template: 📚 Impatient Learner's Guide Generator
+    provider: openai
+    input:
+      subject: "{{subject}}"
+      number_words: "{{number_words}}"
+      additional_requirements: "{{additional_requirements}}"
+    output:
+      article: learning_article
+      next_steps: learning_next_steps
+
+  - template: 🌐 Universal Language Translator
+    provider: openai
+    input:
+      text_to_translate: "$learning_article"
+      source_language: "{{source_language}}"
+      target_language: "{{target_language}}"
+    output:
+      translation: final_translation
